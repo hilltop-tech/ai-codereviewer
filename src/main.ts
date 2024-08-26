@@ -8,6 +8,19 @@ import minimatch from "minimatch";
 const GITHUB_TOKEN: string = core.getInput("GITHUB_TOKEN");
 const OPENAI_API_KEY: string = core.getInput("OPENAI_API_KEY");
 const OPENAI_API_MODEL: string = core.getInput("OPENAI_API_MODEL");
+const Language: string = core.getInput("Language");
+const MAX_TOKENS: number = parseInt(core.getInput("max_tokens"));
+const SUPPORTS_JSON_FORMAT_MODEL = [
+  "gpt-4o",
+  "gpt-4o-mini",
+  "gpt-4-turbo-preview",
+  "gpt-4-turbo",
+  "gpt-3.5-turbo",
+  "gpt-4-0125-preview",
+  "gpt-4-1106-preview",
+  "gpt-3.5-turbo-0125",
+  "gpt-3.5-turbo-1106",
+];
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
@@ -86,6 +99,7 @@ function createPrompt(file: File, chunk: Chunk, prDetails: PRDetails): string {
 - Write the comment in GitHub Markdown format.
 - Use the given description only for the overall context and only comment the code.
 - IMPORTANT: NEVER suggest adding comments to the code.
+- Plese only output ${Language}.
 
 Review the following code diff in the file "${
     file.to
@@ -117,7 +131,7 @@ async function getAIResponse(prompt: string): Promise<Array<{
   const queryConfig = {
     model: OPENAI_API_MODEL,
     temperature: 0.2,
-    max_tokens: 700,
+    max_tokens: MAX_TOKENS,
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
@@ -127,7 +141,7 @@ async function getAIResponse(prompt: string): Promise<Array<{
     const response = await openai.chat.completions.create({
       ...queryConfig,
       // return JSON if the model supports it:
-      ...(OPENAI_API_MODEL === "gpt-4-1106-preview"
+      ...(SUPPORTS_JSON_FORMAT_MODEL.includes(OPENAI_API_MODEL)
         ? { response_format: { type: "json_object" } }
         : {}),
       messages: [
