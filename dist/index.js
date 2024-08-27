@@ -125,6 +125,7 @@ function createPrompt(file, chunk, prDetails) {
 - Provide comments and suggestions ONLY if there is something to improve, otherwise "reviews" should be an empty array.
 - Write the comment in GitHub Markdown format.
 - Use the given description only for the overall context and only comment the code.
+- Do not comment about css classes.
 - IMPORTANT: NEVER suggest adding comments to the code.
 - Plese only output ${Language}.
 
