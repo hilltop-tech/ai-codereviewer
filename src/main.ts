@@ -166,7 +166,7 @@ async function getGoogleAIResponse(prompt: string): Promise<string | null> {
     temperature: 0.2,
     topP: 0.95,
     topK: 64,
-    maxOutputTokens: 8192,
+    maxOutputTokens: MAX_TOKENS,
     responseMimeType: "application/json",
     responseSchema: {
       type: SchemaType.OBJECT,

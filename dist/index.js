@@ -190,7 +190,7 @@ function getGoogleAIResponse(prompt) {
             temperature: 0.2,
             topP: 0.95,
             topK: 64,
-            maxOutputTokens: 8192,
+            maxOutputTokens: MAX_TOKENS,
             responseMimeType: "application/json",
             responseSchema: {
                 type: generative_ai_1.SchemaType.OBJECT,
