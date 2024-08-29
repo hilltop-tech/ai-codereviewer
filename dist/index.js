@@ -172,15 +172,17 @@ function getAIResponse(prompt) {
     });
 }
 function getAImodel(provider) {
-    if (provider === "openai") {
-        return getOpenAIResponse;
-    }
-    else if (provider === "google") {
-        return getGoogleAIResponse;
-    }
-    else {
-        console.error("Unsupported AI provider:", provider);
-    }
+    return __awaiter(this, void 0, void 0, function* () {
+        if (provider === "openai") {
+            return getOpenAIResponse;
+        }
+        else if (provider === "google") {
+            return getGoogleAIResponse;
+        }
+        else {
+            console.error("Unsupported AI provider:", provider);
+        }
+    });
 }
 function getGoogleAIResponse(prompt) {
     return __awaiter(this, void 0, void 0, function* () {

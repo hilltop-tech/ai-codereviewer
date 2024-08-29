@@ -151,7 +151,7 @@ async function getAIResponse(prompt: string): Promise<Array<{
   }
 }
 
-function getAImodel(provider: string) {
+async function getAImodel(provider: string) {
   if (provider === "openai") {
     return getOpenAIResponse;
   } else if (provider === "google") {
