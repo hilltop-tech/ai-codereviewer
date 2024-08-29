@@ -20,5 +20,5 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           API_MODEL: "gemini-1.5-pro-exp-0827"
           LANGUAGE: "Japanese"
-          max_tokens: 8096
+          max_tokens: 8182
           exclude: "yarn.lock,dist/**"
