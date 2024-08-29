@@ -17,4 +17,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_API_MODEL: "gpt-4o-mini"
+          LANGUAGE: "Japanese"
+          max_tokens: "8096"
           exclude: "yarn.lock,dist/**"
