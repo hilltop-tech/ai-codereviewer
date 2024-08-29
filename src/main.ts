@@ -1,13 +1,20 @@
 import { readFileSync } from "fs";
 import * as core from "@actions/core";
 import OpenAI from "openai";
+import {
+  GenerationConfig,
+  GoogleGenerativeAI,
+  SchemaType,
+} from "@google/generative-ai";
 import { Octokit } from "@octokit/rest";
 import parseDiff, { Chunk, File } from "parse-diff";
 import minimatch from "minimatch";
 
 const GITHUB_TOKEN: string = core.getInput("GITHUB_TOKEN");
+const MODEL_PROVIDER: string = core.getInput("MODEL_PROVIDER");
 const OPENAI_API_KEY: string = core.getInput("OPENAI_API_KEY");
-const OPENAI_API_MODEL: string = core.getInput("OPENAI_API_MODEL");
+const GOOGLEAI_API_KEY: string = core.getInput("GOOGLEAI_API_KEY");
+const API_MODEL: string = core.getInput("API_MODEL");
 const Language: string = core.getInput("Language");
 const MAX_TOKENS: number = parseInt(core.getInput("max_tokens"));
 const SUPPORTS_JSON_FORMAT_MODEL = [
@@ -23,10 +30,6 @@ const SUPPORTS_JSON_FORMAT_MODEL = [
 ];
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
-
-const openai = new OpenAI({
-  apiKey: OPENAI_API_KEY,
-});
 
 interface PRDetails {
   owner: string;
@@ -129,20 +132,96 @@ async function getAIResponse(prompt: string): Promise<Array<{
   lineNumber: string;
   reviewComment: string;
 }> | null> {
+  getAImodel(MODEL_PROVIDER);
+  try {
+    const aiModel = await getAImodel(MODEL_PROVIDER);
+    if (!aiModel) {
+      console.error("AI model not found");
+      return null;
+    }
+    const res = await aiModel(prompt);
+    if (!res) {
+      console.error("AI response not found");
+      return null;
+    }
+    return JSON.parse(res).reviews;
+  } catch (error) {
+    console.error("Error:", error);
+    return null;
+  }
+}
+
+async function getAImodel(provider: string) {
+  if (provider === "openai") {
+    return getOpenAIResponse;
+  } else if (provider === "google") {
+    return getGoogleAIResponse;
+  } else {
+    console.error("Unsupported AI provider:", provider);
+  }
+}
+
+async function getGoogleAIResponse(prompt: string): Promise<string | null> {
+  const generationConfig: GenerationConfig = {
+    temperature: 0.2,
+    topP: 0.95,
+    topK: 64,
+    maxOutputTokens: MAX_TOKENS,
+    responseMimeType: "application/json",
+    responseSchema: {
+      type: SchemaType.OBJECT,
+      description: `Provide the response in following JSON format:  {"reviews": [{"lineNumber":  <line_number>, "reviewComment": "<review comment>"}]}`,
+      properties: {
+        reviews: {
+          type: SchemaType.ARRAY,
+          items: {
+            type: SchemaType.OBJECT,
+            properties: {
+              lineNumber: {
+                type: SchemaType.STRING,
+                description: "line number",
+              },
+              reviewComment: {
+                type: SchemaType.STRING,
+                description: "review comment",
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  const gemini = new GoogleGenerativeAI(GOOGLEAI_API_KEY);
+  const model = gemini.getGenerativeModel({
+    model: API_MODEL,
+  });
+
+  try {
+    const chatSession = model.startChat({ generationConfig });
+    const result = await chatSession.sendMessage(prompt);
+    return result.response.text().trim() || "{}";
+  } catch (error) {
+    console.error("Error:", error);
+    return null;
+  }
+}
+
+async function getOpenAIResponse(prompt: string): Promise<string | null> {
+  const openai = new OpenAI({
+    apiKey: OPENAI_API_KEY,
+  });
   const queryConfig = {
-    model: OPENAI_API_MODEL,
+    model: API_MODEL,
     temperature: 0.2,
     max_tokens: MAX_TOKENS,
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
   };
-
   try {
     const response = await openai.chat.completions.create({
       ...queryConfig,
-      // return JSON if the model supports it:
-      ...(SUPPORTS_JSON_FORMAT_MODEL.includes(OPENAI_API_MODEL)
+      ...(SUPPORTS_JSON_FORMAT_MODEL.includes(API_MODEL)
         ? { response_format: { type: "json_object" } }
         : {}),
       messages: [
@@ -152,9 +231,7 @@ async function getAIResponse(prompt: string): Promise<Array<{
         },
       ],
     });
-
-    const res = response.choices[0].message?.content?.trim() || "{}";
-    return JSON.parse(res).reviews;
+    return response.choices[0].message?.content?.trim() || "{}";
   } catch (error) {
     console.error("Error:", error);
     return null;

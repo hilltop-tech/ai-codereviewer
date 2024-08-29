@@ -1,4 +1,4 @@
-name: Code Review with OpenAI
+name: Code Review
 on:
   pull_request:
     types:
@@ -12,11 +12,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Code Review
-        uses: hilltop-tech/ai-codereviewer@main
+        uses: hilltop-tech/ai-codereviewer@v3.0.0
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODEL_PROVIDER: "google"
+          GOOGLEAI_API_KEY: ${{ secrets.GOOGLEAI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_API_MODEL: "gpt-4o-mini"
+          API_MODEL: "gemini-1.5-pro-exp-0827"
           LANGUAGE: "Japanese"
-          max_tokens: 8096
+          max_tokens: 8182
           exclude: "yarn.lock,dist/**"
