@@ -15,8 +15,10 @@ jobs:
         uses: hilltop-tech/ai-codereviewer@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODEL_PROVIDER: "google"
+          GOOGLEAI_API_KEY: ${{ secrets.GOOGLEAI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_API_MODEL: "gpt-4o-mini"
+          API_MODEL: "gemini-1.5-pro-exp-0827"
           LANGUAGE: "Japanese"
           max_tokens: 8096
           exclude: "yarn.lock,dist/**"

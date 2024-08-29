@@ -4,11 +4,17 @@ inputs:
   GITHUB_TOKEN:
     description: "GitHub token to interact with the repository."
     required: true
+  MODEL_PROVIDER:
+    description: "Model provider for the code review."
+    required: true
+  GOOGLEAI_API_KEY:
+    description: "Google AI API key for code review."
+    required: false
   OPENAI_API_KEY:
     description: "OpenAI API key for GPT."
-    required: true
-  OPENAI_API_MODEL:
-    description: "OpenAI API model."
+    required: false
+  API_MODEL:
+    description: "Model for the code review."
     required: false
     default: "gpt-4"
   LANGUAGE:
